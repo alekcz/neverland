@@ -13,7 +13,7 @@
 	(f/defcfn freeaddrinfo)	
 	(f/defcfn gai_strerror)
 	(f/defcfn inet_ntop)
-	(f/defconst SOCK_DGRAM)
+	(f/defconst SOCK_STREAM)
 	(f/defconst AF_INET)
 	(f/defcstruct in_addr [ :s_addr ])
 	(f/defcstruct sockaddr	 [ :sa_family :sa_data ])
@@ -27,19 +27,20 @@
 						:ai_canonname
 						:ai_next]))
 
-(defn convert-to-ip [addrinfo-struct]
-	(let [addr addrinfo-struct]
+(defn convert-to-ip [addr-struct]
+	(let [addr addr-struct]
 		(let [sock (ffi/cast addr sockaddr) ip ""]
 		  	(let [final (inet_ntop AF_INET sock ip (:ai_addrlen addr))]
 		  	 		final))))
-(defn get-next [addrinfo-struct]
-	(ffi/cast (:ai_next addrinfo-struct) addrinfo))
-(defn get-last-host [addrinfo-struct]
-	(convert-to-ip  (ffi/cast addrinfo-struct addrinfo)))
+(defn get-next [addr-struct]
+	(ffi/cast (:ai_next addr-struct) addrinfo))
+
+(defn get-last-host [addr-struct]
+	(convert-to-ip  (ffi/cast addr-struct addrinfo)))
 
 (defn get-ip [hostname]
 	(let [hint (addrinfo) res (addrinfo)]
-		(ffi/set! hint :ai_socktype SOCK_DGRAM)
+		(ffi/set! hint :ai_socktype SOCK_STREAM)
 		(ffi/set! hint :ai_protocol 0)
 		(ffi/set! hint :ai_flags 2)
 		(ffi/set! hint :ai_family AF_INET)
